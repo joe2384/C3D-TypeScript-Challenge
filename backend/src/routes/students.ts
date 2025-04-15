@@ -1,11 +1,15 @@
-import { patchStudent, postStudent } from "../controllers/students";
+import {
+  getStudents,
+  patchStudent,
+  postStudent,
+} from "../controllers/students";
 
-import { authenticate } from "../middleware/authMiddleware";
 import express from "express";
 
 const router = express.Router();
 
-router.post("/", authenticate, postStudent);
-router.patch("/:id", authenticate, patchStudent);
+router.get("/", getStudents);
+router.post("/", postStudent);
+router.patch("/:id", patchStudent);
 
 export default router;
