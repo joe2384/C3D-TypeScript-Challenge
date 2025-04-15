@@ -1,6 +1,5 @@
 import { PayloadAction, createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { Student, StudentState } from "../../types/student";
-
 import { restCall } from "../../utils/api/restCall";
 
 const initialState: StudentState = {
@@ -15,6 +14,20 @@ export const fetchStudents = createAsyncThunk<
   { rejectValue: string }
 >("students/fetchStudents", async (_, thunkAPI) => {
   const { data, error } = await restCall<Student[]>({ url: "/api/students" });
+  if (!data || error) {
+    return thunkAPI.rejectWithValue(error || "Failed to fetch students");
+  }
+  return data;
+});
+
+export const fetchStudentsWithParams = createAsyncThunk<
+  Student[],
+  Record<string, string>,
+  { rejectValue: string }
+>("students/fetchStudentsWithParams", async (params, thunkAPI) => {
+  const query = new URLSearchParams(params).toString();
+  const url = `/api/students?${query}`;
+  const { data, error } = await restCall<Student[]>({ url });
   if (!data || error) {
     return thunkAPI.rejectWithValue(error || "Failed to fetch students");
   }
@@ -59,57 +72,53 @@ const studentSlice = createSlice({
   reducers: {},
   extraReducers: (builder) => {
     builder
-      // Fetch Students
       .addCase(fetchStudents.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(
-        fetchStudents.fulfilled,
-        (state, action: PayloadAction<Student[]>) => {
-          state.loading = false;
-          state.students = action.payload;
-        }
-      )
+      .addCase(fetchStudents.fulfilled, (state, action: PayloadAction<Student[]>) => {
+        state.loading = false;
+        state.students = action.payload;
+      })
       .addCase(fetchStudents.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload || "Failed to fetch students";
       })
-
-      // Create Student
+      .addCase(fetchStudentsWithParams.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchStudentsWithParams.fulfilled, (state, action: PayloadAction<Student[]>) => {
+        state.loading = false;
+        state.students = action.payload;
+      })
+      .addCase(fetchStudentsWithParams.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload || "Failed to fetch students";
+      })
       .addCase(createStudent.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(
-        createStudent.fulfilled,
-        (state, action: PayloadAction<Student>) => {
-          state.loading = false;
-          state.students.push(action.payload);
-        }
-      )
+      .addCase(createStudent.fulfilled, (state, action: PayloadAction<Student>) => {
+        state.loading = false;
+        state.students.push(action.payload);
+      })
       .addCase(createStudent.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload || "Failed to create student";
       })
-
-      // Update Student
       .addCase(updateStudent.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(
-        updateStudent.fulfilled,
-        (state, action: PayloadAction<Student>) => {
-          state.loading = false;
-          const index = state.students.findIndex(
-            (s) => s.id === action.payload.id
-          );
-          if (index !== -1) {
-            state.students[index] = action.payload;
-          }
+      .addCase(updateStudent.fulfilled, (state, action: PayloadAction<Student>) => {
+        state.loading = false;
+        const index = state.students.findIndex((s) => s.id === action.payload.id);
+        if (index !== -1) {
+          state.students[index] = action.payload;
         }
-      )
+      })
       .addCase(updateStudent.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload || "Failed to update student";
