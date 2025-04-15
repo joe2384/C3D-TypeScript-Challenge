@@ -54,8 +54,8 @@ Built with **Express**, **Knex**, **PostgreSQL**, **React**, **Redux Toolkit**, 
 | gpa              | decimal(3,2)   | ✅       |
 | city             | string         | ✅       |
 | state            | string         | ✅       |
-| latitude         | decimal(10,7)  | ❌       |
-| longitude        | decimal(10,7)  | ❌       |
+| latitude         | decimal(10,7)  | ✅       |
+| longitude        | decimal(10,7)  | ✅       |
 | created_at       | timestamp      | ✅       |
 
 ---
